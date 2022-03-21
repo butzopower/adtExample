@@ -30,13 +30,23 @@ func TestExecutingWithTwoTypes(t *testing.T) {
 }
 
 func TestMapWithTwoTypes(t *testing.T) {
-	mapper := adt.Mapper[string]().
+	stringMapper := adt.Mapper[string]().
 		WithTypeA(func(typeA lib.TypeA) string { return "type-a" }).
 		WithTypeB(func(typeB lib.TypeB) string { return "type-b" })
 
-	typeAMapped := mapper.Map(adt.Of(lib.TypeA{}))
-	typeBMapped := mapper.Map(adt.Of(lib.TypeB{}))
+	typeAMappedString := stringMapper.Map(adt.Of(lib.TypeA{}))
+	typeBMappedString := stringMapper.Map(adt.Of(lib.TypeB{}))
 
-	require.Equal(t, "type-a", typeAMapped)
-	require.Equal(t, "type-b", typeBMapped)
+	require.Equal(t, "type-a", typeAMappedString)
+	require.Equal(t, "type-b", typeBMappedString)
+
+	intMapper := adt.Mapper[int]().
+		WithTypeA(func(typeA lib.TypeA) int { return 1000 }).
+		WithTypeB(func(typeB lib.TypeB) int { return 2000 })
+
+	typeAMappedInt := intMapper.Map(adt.Of(lib.TypeA{}))
+	typeBMappedInt := intMapper.Map(adt.Of(lib.TypeB{}))
+
+	require.Equal(t, 1000, typeAMappedInt)
+	require.Equal(t, 2000, typeBMappedInt)
 }
