@@ -2,11 +2,11 @@ package adt
 
 import "adtExample/lib"
 
-type ofUnion interface {
+type Union interface {
 	lib.TypeA | lib.TypeB
 }
 
-type union interface {
+type unionContainer interface {
 	atd()
 }
 
@@ -22,26 +22,26 @@ type TypeBContainer struct {
 
 func (t TypeBContainer) atd() {}
 
-type Atd struct {
-	v union
+type TaggedUnion struct {
+	v unionContainer
 }
 
-// Of
+// UnionOf
 
-func Of[T ofUnion](union T) *Atd {
+func UnionOf[T Union](union T) TaggedUnion {
 	var t interface{}
 	t = union
 	switch v := t.(type) {
 	case lib.TypeA:
-		return &Atd{TypeAContainer{v}}
+		return TaggedUnion{TypeAContainer{v}}
 	case lib.TypeB:
-		return &Atd{TypeBContainer{v}}
+		return TaggedUnion{TypeBContainer{v}}
 	default:
-		panic("called Of with disallowed type")
+		panic("called UnionOf with disallowed type")
 	}
 }
 
-// Do
+// UnionExecutor
 
 type doFnTypeAFn func(aType lib.TypeA)
 type doFnTypeBFn func(aType lib.TypeB)
@@ -73,7 +73,7 @@ func (chain *doChainA) WithTypeA(fn doFnTypeAFn) *doChainB {
 	return &doChainB{chain.doBuilder}
 }
 
-func (e doChainExecutor) Exec(of *Atd) {
+func (e doChainExecutor) Exec(of TaggedUnion) {
 	switch container := of.v.(type) {
 	case TypeAContainer:
 		e.fns.doFnTypeA(container.v)
@@ -82,7 +82,7 @@ func (e doChainExecutor) Exec(of *Atd) {
 	}
 }
 
-func Do() *doChainA {
+func UnionExecutor() *doChainA {
 	return &doChainA{doFns{}}
 }
 
@@ -118,17 +118,17 @@ func (chain mapChainB[T]) WithTypeB(fn mapFnTypeBFn[T]) *mapChainMapper[T] {
 	return &mapChainMapper[T]{chain.fns}
 }
 
-func (mapper mapChainMapper[T]) Map(of *Atd) T {
+func (mapper mapChainMapper[T]) Map(of TaggedUnion) T {
 	switch container := of.v.(type) {
 	case TypeAContainer:
 		return mapper.fns.mapFnTypeA(container.v)
 	case TypeBContainer:
 		return mapper.fns.mapFnTypeB(container.v)
 	default:
-		panic("called Of with disallowed type")
+		panic("called UnionOf with disallowed type")
 	}
 }
 
-func Mapper[T any]() *mapChainA[T] {
+func UnionMapper[T any]() *mapChainA[T] {
 	return &mapChainA[T]{mapFns[T]{}}
 }
